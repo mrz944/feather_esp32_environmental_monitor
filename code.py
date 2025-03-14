@@ -108,13 +108,13 @@ def sen55_read_data():
 
 def update_display():
     """Update the display with current sensor readings"""
-    readings_text = (
-        f"Temp: {current_data['temperature']:.1f}°C\n"
-        f"Humidity: {current_data['humidity']:.1f}%\n"
-        f"PM2.5: {current_data['pm25']:.1f} µg/m³\n"
-        f"PM10: {current_data['pm10']:.1f} µg/m³\n"
-        f"VOC: {current_data['voc']:.1f}\n"
-        f"NOx: {current_data['nox']:.1f}"
+    readings_text = "Temp: {:.1f}°C\nHumidity: {:.1f}%\nPM2.5: {:.1f} µg/m³\nPM10: {:.1f} µg/m³\nVOC: {:.1f}\nNOx: {:.1f}".format(
+        current_data['temperature'],
+        current_data['humidity'],
+        current_data['pm25'],
+        current_data['pm10'],
+        current_data['voc'],
+        current_data['nox']
     )
     readings_label.text = readings_text
 
@@ -144,13 +144,13 @@ def collect_sensor_data():
         update_display()
         return True
     except Exception as e:
-        print(f"Error collecting sensor data: {e}")
+        print("Error collecting sensor data: {}".format(e))
         return False
 
 # Connect to WiFi
 status_label.text = "Connecting to WiFi..."
 wifi.radio.connect(WIFI_SSID, WIFI_PASSWORD)
-status_label.text = f"IP: {wifi.radio.ipv4_address}"
+status_label.text = "IP: {}".format(wifi.radio.ipv4_address)
 
 # Initialize HTTP server
 pool = socketpool.SocketPool(wifi.radio)
@@ -187,11 +187,11 @@ try:
     status_label.text = "Sensor initialized"
 except Exception as e:
     status_label.text = "Sensor init failed!"
-    print(f"Error initializing sensor: {e}")
+    print("Error initializing sensor: {}".format(e))
 
 # Start the server
 server.start(port=SERVER_PORT)
-print(f"Server started on port {SERVER_PORT}")
+print("Server started on port {}".format(SERVER_PORT))
 
 # Main loop
 last_update = 0
@@ -210,5 +210,5 @@ while True:
         server.poll()
         
     except Exception as e:
-        print(f"Error in main loop: {e}")
+        print("Error in main loop: {}".format(e))
         time.sleep(1)
