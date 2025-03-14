@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEN55 Sensor Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SEN55 Environmental Sensor</h1>
+            <div class="status">
+                <span id="connection-status">⚪ Connecting...</span>
+                <span id="last-update"></span>
+            </div>
+        </header>
+
+        <div class="current-readings">
+            <h2>Current Readings</h2>
+            <div class="readings-grid">
+                <div class="reading-card">
+                    <h3>Temperature</h3>
+                    <p class="value"><span id="temperature">--</span> °C</p>
+                </div>
+                <div class="reading-card">
+                    <h3>Humidity</h3>
+                    <p class="value"><span id="humidity">--</span> %</p>
+                </div>
+                <div class="reading-card">
+                    <h3>PM2.5</h3>
+                    <p class="value"><span id="pm25">--</span> μg/m³</p>
+                </div>
+                <div class="reading-card">
+                    <h3>PM10</h3>
+                    <p class="value"><span id="pm10">--</span> μg/m³</p>
+                </div>
+                <div class="reading-card">
+                    <h3>VOC Index</h3>
+                    <p class="value"><span id="voc">--</span></p>
+                </div>
+                <div class="reading-card">
+                    <h3>NOx Index</h3>
+                    <p class="value"><span id="nox">--</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts">
+            <h2>Historical Data</h2>
+            <div class="chart-container">
+                <canvas id="temperatureChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="humidityChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="particlesChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="gasesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

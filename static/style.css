@@ -1,0 +1,128 @@
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --background-color: #f5f7fa;
+    --card-background: #ffffff;
+    --text-color: #333333;
+    --border-radius: 8px;
+    --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+    flex-wrap: wrap;
+}
+
+header h1 {
+    color: var(--primary-color);
+    font-size: 28px;
+}
+
+.status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-size: 14px;
+}
+
+#connection-status {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#last-update {
+    color: #666;
+}
+
+h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 22px;
+}
+
+h3 {
+    color: var(--primary-color);
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.current-readings {
+    margin-bottom: 40px;
+}
+
+.readings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+.reading-card {
+    background-color: var(--card-background);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--box-shadow);
+    text-align: center;
+}
+
+.value {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--secondary-color);
+}
+
+.charts {
+    margin-bottom: 40px;
+}
+
+.chart-container {
+    background-color: var(--card-background);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--box-shadow);
+    margin-bottom: 20px;
+    height: 300px;
+}
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .status {
+        margin-top: 10px;
+        align-items: flex-start;
+    }
+    
+    .readings-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+}

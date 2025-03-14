@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# CircuitPython
+.Trashes
+.metadata_never_index
+.fseventsd/
+boot_out.txt
+
+# Project specific
+wifi_config.py
+secrets.json
+
+# System files
+.DS_Store
