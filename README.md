@@ -44,7 +44,7 @@ The readings are displayed both on the TFT screen and served via a web interface
    ```python
    WIFI_SSID = "your_wifi_ssid"
    WIFI_PASSWORD = "your_wifi_password"
-   SERVER_PORT = 80
+   SERVER_PORT = 1234
    ```
 
 4. The device will automatically:

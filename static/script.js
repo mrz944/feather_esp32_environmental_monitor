@@ -1,5 +1,5 @@
 // Configuration
-const UPDATE_INTERVAL = 5 * 60 * 1000; // 5 minutes in milliseconds
+const UPDATE_INTERVAL = 30 * 1000; // 30 seconds in milliseconds
 const MAX_DATA_POINTS = 12; // Store 1 hour of data (12 points at 5-minute intervals)
 
 // Chart colors

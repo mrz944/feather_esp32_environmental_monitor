@@ -12,6 +12,7 @@ boot_out.txt
 # Project specific
 wifi_config.py
 secrets.json
+settings.toml
 
 # System files
 .DS_Store

@@ -6,31 +6,32 @@ import wifi
 import socketpool
 import displayio
 import terminalio
+
 from adafruit_display_text import label
-from adafruit_httpserver import Server, Request, Response, GET
+from adafruit_httpserver import Server, Request, Response, GET, FileResponse
 from collections import deque
 from wifi_config import WIFI_SSID, WIFI_PASSWORD, SERVER_PORT
+
+from circuitpython_sensirion_i2c_sen5x import Sen5xI2cDevice
+from circuitpython_sensirion_i2c_driver import I2cTransceiver,I2cConnection
 
 # Initialize display
 display = board.DISPLAY
 main_group = displayio.Group()
-display.show(main_group)
+display.root_group = main_group
 
 # Create text labels for display
+# Create text labels with just the required positional arguments
 title_label = label.Label(
     terminalio.FONT,
     text="SEN55 Sensor",
-    color=0xFFFFFF,
-    x=display.width // 2,
-    y=10,
     anchor_point=(0.5, 0),
-    anchored_position=(display.width // 2, 10),
+    anchored_position=(display.width // 2, 10)
 )
 
 readings_label = label.Label(
     terminalio.FONT,
     text="",
-    color=0xFFFFFF,
     x=10,
     y=40,
     line_spacing=1.2
@@ -39,7 +40,6 @@ readings_label = label.Label(
 status_label = label.Label(
     terminalio.FONT,
     text="Starting...",
-    color=0xFFFFFF,
     x=10,
     y=display.height - 20
 )
@@ -49,19 +49,21 @@ main_group.append(readings_label)
 main_group.append(status_label)
 
 # Initialize I2C for SEN55
-i2c = busio.I2C(board.SCL, board.SDA)
+i2c = board.I2C()
 SEN55_ADDR = 0x69  # SEN55 I2C address
+transceiver = I2cTransceiver(i2c, SEN55_ADDR)
+sen5x_device = Sen5xI2cDevice(I2cConnection(transceiver))
 
 # Data storage (1 hour of data with 5-minute intervals = 12 points)
 MAX_HISTORY = 12
 history = {
-    'timestamps': deque(maxlen=MAX_HISTORY),
-    'temperature': deque(maxlen=MAX_HISTORY),
-    'humidity': deque(maxlen=MAX_HISTORY),
-    'pm25': deque(maxlen=MAX_HISTORY),
-    'pm10': deque(maxlen=MAX_HISTORY),
-    'voc': deque(maxlen=MAX_HISTORY),
-    'nox': deque(maxlen=MAX_HISTORY)
+    'timestamps': deque([], MAX_HISTORY),
+    'temperature': deque([], MAX_HISTORY),
+    'humidity': deque([], MAX_HISTORY),
+    'pm25': deque([], MAX_HISTORY),
+    'pm10': deque([], MAX_HISTORY),
+    'voc': deque([], MAX_HISTORY),
+    'nox': deque([], MAX_HISTORY)
 }
 
 current_data = {
@@ -73,38 +75,41 @@ current_data = {
     'nox': 0
 }
 
-def sen55_start_measurement():
-    """Start continuous measurement on SEN55"""
-    try:
-        i2c.try_lock()
-        i2c.writeto(SEN55_ADDR, bytes([0x00, 0x21]))  # Start measurement command
-    finally:
-        i2c.unlock()
-    time.sleep(0.1)  # Wait for command to process
-
 def sen55_read_data():
     """Read measurement data from SEN55"""
-    try:
-        i2c.try_lock()
-        # Read measured values command
-        i2c.writeto(SEN55_ADDR, bytes([0x03, 0xC4]))
-        time.sleep(0.02)  # Wait for data
-        
-        # Read 24 bytes of data
-        result = bytearray(24)
-        i2c.readfrom_into(SEN55_ADDR, result)
-        
-        # Parse data according to SEN55 data format
-        pm25 = (result[0] << 8 | result[1]) / 10
-        pm10 = (result[3] << 8 | result[4]) / 10
-        humidity = (result[6] << 8 | result[7]) / 100
-        temperature = (result[9] << 8 | result[10]) / 200
-        voc = (result[12] << 8 | result[13]) / 10
-        nox = (result[15] << 8 | result[16]) / 10
-        
-        return temperature, humidity, pm25, pm10, voc, nox
-    finally:
-        i2c.unlock()
+
+    # Start measurement
+    sen5x_device.start_measurement()
+
+    time.sleep(3)
+
+    for i in range(3):
+        # Wait until next result is available
+        print("Waiting for new data...")
+        while sen5x_device.read_data_ready() is False:
+            time.sleep(0.1)
+
+        # Read measured values -> clears the "data ready" flag
+        values = sen5x_device.read_measured_values()
+        print(values)
+
+        # Read device status
+        status = sen5x_device.read_device_status()
+        print("Device Status: {}\n".format(status))
+
+    # Stop measurement
+    sen5x_device.stop_measurement()
+
+    # mc_1p0 = values.mass_concentration_1p0.physical
+    mc_2p5 = values.mass_concentration_2p5.physical
+    # mc_4p0 = values.mass_concentration_4p0.physical
+    mc_10p0 = values.mass_concentration_10p0.physical
+    ambient_rh = values.ambient_humidity.percent_rh
+    ambient_t = values.ambient_temperature.degrees_celsius
+    voc_index = values.voc_index.scaled
+    nox_index = values.nox_index.scaled
+
+    return ambient_t, ambient_rh, mc_2p5, mc_10p0, voc_index, nox_index
 
 def update_display():
     """Update the display with current sensor readings"""
@@ -159,56 +164,51 @@ server = Server(pool, "/static", debug=True)
 @server.route("/")
 def base(request: Request):
     """Serve the main page"""
-    return Response(request, file="static/index.html")
+    return FileResponse(request, "index.html")
 
 @server.route("/api/data")
 def get_data(request: Request):
     """Return current and historical sensor data"""
-    return Response(
-        request,
-        json.dumps({
-            'current': current_data,
-            'history': {
-                'timestamps': list(history['timestamps']),
-                'temperature': list(history['temperature']),
-                'humidity': list(history['humidity']),
-                'pm25': list(history['pm25']),
-                'pm10': list(history['pm10']),
-                'voc': list(history['voc']),
-                'nox': list(history['nox'])
-            }
-        }),
-        content_type='application/json'
-    )
+    response_data = json.dumps({
+        'current': current_data,
+        'history': {
+            'timestamps': list(history['timestamps']),
+            'temperature': list(history['temperature']),
+            'humidity': list(history['humidity']),
+            'pm25': list(history['pm25']),
+            'pm10': list(history['pm10']),
+            'voc': list(history['voc']),
+            'nox': list(history['nox'])
+        }
+    })
+    response = Response(request, response_data)
+    response.content_type = 'application/json'
+    return response
 
 # Start the sensor
 try:
-    sen55_start_measurement()
+    sen5x_device.device_reset()
+    sen5x_device.get_product_name()
     status_label.text = "Sensor initialized"
 except Exception as e:
     status_label.text = "Sensor init failed!"
     print("Error initializing sensor: {}".format(e))
 
 # Start the server
-server.start(port=SERVER_PORT)
+server.start(str(wifi.radio.ipv4_address), port=SERVER_PORT)
 print("Server started on port {}".format(SERVER_PORT))
 
 # Main loop
 last_update = 0
-update_interval = 300  # 5 minutes in seconds
+update_interval = 300  # 5 min in seconds
 
 while True:
-    try:
-        current_time = time.monotonic()
-        
-        # Update sensor data every 5 minutes
-        if current_time - last_update >= update_interval:
-            if collect_sensor_data():
-                last_update = current_time
-        
-        # Handle any pending server requests
-        server.poll()
-        
-    except Exception as e:
-        print("Error in main loop: {}".format(e))
-        time.sleep(1)
+    current_time = time.monotonic()
+    
+    # Update sensor data every 5 minutes
+    if current_time - last_update >= update_interval:
+        if collect_sensor_data():
+            last_update = current_time
+    
+    # Handle any pending server requests
+    server.poll()

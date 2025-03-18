@@ -1,0 +1,15 @@
+{
+  "python.languageServer": "Pylance",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingModuleSource": "none",
+    "reportShadowedImports": "none"
+  },
+  "circuitpython.board.version": null,
+  "python.analysis.extraPaths": [
+    "/Users/marcinzadka/.cursor/extensions/wmerkens.vscode-circuitpython-v2-cursor-ai-0.3.3/boards/0x239A/0x811E",
+    "/Users/marcinzadka/.cursor/extensions/wmerkens.vscode-circuitpython-v2-cursor-ai-0.3.3/stubs",
+    "/Users/marcinzadka/Library/Application Support/Cursor/User/globalStorage/wmerkens.vscode-circuitpython-v2-cursor-ai/bundle/20250318/adafruit-circuitpython-bundle-py-20250318/lib"
+  ],
+  "circuitpython.board.vid": "0x239A",
+  "circuitpython.board.pid": "0x811E"
+}
