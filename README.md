@@ -1,4 +1,4 @@
-# Adafruit Feather ESP32-S3 TFT with SEN55 Environmental Monitor
+# Adafruit Feather ESP32-S3 TFT with SEN55 Environmental Monitor based od CircuitPython
 
 This project uses an Adafruit Feather ESP32-S3 TFT board with a Sensirion SEN55 environmental sensor to monitor:
 - Temperature
